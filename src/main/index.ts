@@ -118,6 +118,7 @@ async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt 
   let processError: Error | null = null
   child.on('error', (error) => { processError = error })
 
+  const completedResults: string[] = []
   try {
     updateStatus('running')
     for (let index = 0; index < workflow.steps.length; index += 1) {
