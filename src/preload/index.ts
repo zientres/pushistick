@@ -7,7 +7,7 @@ const api: PushistickApi = {
   deleteWorkflow: (id) => ipcRenderer.invoke('workflows:delete', id),
   getRuns: () => ipcRenderer.invoke('runs:list'),
   checkAntigravity: () => ipcRenderer.invoke('antigravity:check'),
-  runWorkflow: (id) => ipcRenderer.invoke('runs:start', id),
+  runWorkflow: (id, initialPrompt) => ipcRenderer.invoke('runs:start', id, initialPrompt),
   stopRun: (runId) => ipcRenderer.invoke('runs:stop', runId),
   onRunEvent: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: RunEvent) => callback(payload)
