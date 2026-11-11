@@ -85,10 +85,7 @@ function createWindow() {
     if (url.startsWith('https://antigravity.google/')) void shell.openExternal(url)
     return { action: 'deny' }
   })
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    const localUrl = process.env.ELECTRON_RENDERER_URL
-    if (localUrl && url.startsWith(localUrl)) return
-    if (!localUrl && url.startsWith('file://')) return
+  mainWindow.webContents.on('will-navigate', (event) => {
     event.preventDefault()
   })
 
