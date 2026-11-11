@@ -56,7 +56,8 @@ function listWorkflows(): Workflow[] {
 }
 
 function listRuns(): RunRecord[] {
-  return db.prepare('SELECT id, workflow_id as workflowId, workflow_name as workflowName, status, started_at as startedAt, finished_at as finishedAt, error FROM runs ORDER BY started_at DESC LIMIT 100').all() as RunRecord[]
+  const rows = db.prepare('SELECT id, workflow_id as workflowId, workflow_name as workflowName, status, started_at as startedAt, finished_at as finishedAt, error, results_json as resultsJson FROM runs ORDER BY started_at DESC LIMIT 100').all() as Array<RunRecord & { resultsJson: string }>
+  return rows.map(({ resultsJson, ...run }) => ({ ...run, results: JSON.parse(resultsJson || '[]') as string[] }))
 }
 
 function createWindow() {
@@ -138,7 +139,10 @@ async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt 
       if (!result || result.status !== 'SUCCESS') {
         throw new Error(result?.error || 'Antigravity вернул ошибку или незавершённый результат.')
       }
-      emit({ runId, type: 'step-complete', stepIndex: index, stepCount: workflow.steps.length, response: result.response ?? '' })
+      const response = result.response ?? ''
+      completedResults.push(response)
+      db.prepare('UPDATE runs SET results_json = ? WHERE id = ?').run(JSON.stringify(completedResults), runId)
+      emit({ runId, type: 'step-complete', stepIndex: index, stepCount: workflow.steps.length, response })
     }
     updateStatus('completed')
   } catch (error) {
