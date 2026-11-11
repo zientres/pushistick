@@ -74,7 +74,11 @@ function App() {
 
   const start = async (id: string) => {
     try {
-      const { runId } = await window.pushistick.runWorkflow(id)
+      const workflow = workflows.find((item) => item.id === id)
+      const needsInput = workflow?.steps.some((step) => step.prompt.includes('{{input}}')) ?? false
+      const initialPrompt = needsInput ? window.prompt('Введи начальный запрос для этого сценария:') : ''
+      if (needsInput && (initialPrompt === null || !initialPrompt.trim())) return
+      const { runId } = await window.pushistick.runWorkflow(id, initialPrompt ?? '')
       setNotice('Запуск создан: ' + runId.slice(0, 8))
       setPage('runs')
       await refresh()
