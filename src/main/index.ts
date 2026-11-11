@@ -89,7 +89,7 @@ function commandForAgy(args: string[]) {
   return spawn('agy', args, { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
 }
 
-async function executeWorkflow(runId: string, workflow: Workflow) {
+async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt = '') {
   const child = commandForAgy(['--input-format', 'stream-json', '--output-format', 'stream-json'])
   const state = { child, stopped: false }
   activeRuns.set(runId, state)
@@ -187,14 +187,15 @@ app.whenReady().then(() => {
       ? { installed: true, version: output.trim() || 'Версия не определена', error: null }
       : { installed: false, version: null, error: errorOutput.trim() || `Команда завершилась с кодом ${code}` }))
   }))
-  ipcMain.handle('runs:start', (_event, workflowId: string) => {
+  ipcMain.handle('runs:start', (_event, workflowId: string, initialPrompt = '') => {
     const workflow = listWorkflows().find((item) => item.id === workflowId)
     if (!workflow) throw new Error('Шаблон не найден.')
     if (!workflow.steps.length) throw new Error('В шаблоне нет шагов.')
+    if (activeRuns.size > 0) throw new Error('Сейчас уже выполняется другой сценарий. Дождись его завершения.')
     const id = randomUUID()
     db.prepare('INSERT INTO runs (id, workflow_id, workflow_name, status, started_at) VALUES (?, ?, ?, ?, ?)')
       .run(id, workflow.id, workflow.name, 'queued', now())
-    void executeWorkflow(id, workflow)
+    void executeWorkflow(id, workflow, String(initialPrompt ?? ''))
     return { runId: id }
   })
   ipcMain.handle('runs:stop', (_event, runId: string) => {
