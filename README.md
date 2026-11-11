@@ -1,79 +1,57 @@
-# Pushistick Desktop
+# Pushistick
 
-A Windows-first desktop app for building and running sequential AI prompt workflows through the official Antigravity CLI.
+**Pushistick** — браузерный помощник для создания и последовательного выполнения цепочек промптов.
 
-## What is included in v0.1
+## Текущий статус
 
-- Dark desktop interface (Electron + React + TypeScript)
-- Local workflow templates with any number of sequential prompt steps
-- A per-run dynamic input variable: put `{{input}}` anywhere in a step prompt
-- Sequential Antigravity CLI execution using the documented NDJSON streaming protocol
-- Waits for the CLI `result` event before sending the next step
-- Local SQLite storage for templates, run statuses, errors, and step responses
-- Run history, event log, and stop control
-- Windows NSIS installer configuration
+Статическая веб-версия, подготовленная для GitHub Pages:
 
-## Requirements
+- создание, редактирование, поиск и удаление шаблонов;
+- неограниченное количество шагов и изменение их порядка;
+- переменная `{{input}}` во всех шагах;
+- ручной последовательный запуск: скопировать промпт, отправить его в Antigravity, подтвердить получение ответа и перейти дальше;
+- история запусков;
+- локальное хранение через LocalStorage.
 
-- Windows 10/11 (x64)
-- Node.js 22 LTS and npm
-- Google Antigravity CLI (`agy`) installed and authenticated on the same computer
+## Важное ограничение интеграции
 
-## Run in development
+GitHub Pages — статический хостинг. Страница в браузере не может сама запускать локальные программы, вызывать Antigravity CLI или достоверно определять, когда завершилась генерация в другом приложении.
 
-Open PowerShell in the repository folder:
+Поэтому текущая веб-версия **не отправляет промпты в Antigravity автоматически**. Пользователь копирует каждый шаг, вставляет его в Antigravity и подтверждает завершение. Для автоматической интеграции потребуется отдельный локальный мост/агент на компьютере пользователя, который будет принимать запросы от сайта и общаться с официальным Antigravity CLI. Этот мост ещё не реализован.
 
-```powershell
+## Локальный запуск
+
+Требуется Node.js 22 или новее.
+
+```bash
 npm install
 npm run dev
 ```
 
-## Connect Antigravity
+Проверка production-сборки:
 
-1. Install the official Antigravity CLI using Google's current instructions.
-2. Open PowerShell and run `agy`.
-3. Complete Google authentication in the CLI.
-4. Close the CLI session and open Pushistick.
-5. Open **Settings → Antigravity CLI** and select **Check again**.
-
-Pushistick checks whether the CLI executable is available. Authentication is confirmed when the first workflow successfully runs.
-
-## Create and run a workflow
-
-1. Open **My templates** and select **New template**.
-2. Give the template a name and add prompt steps.
-3. Put `{{input}}` in a prompt wherever you want to insert text entered at launch.
-4. Save the template and select **Run**.
-5. Enter the initial text when prompted. Pushistick replaces every `{{input}}` occurrence, sends steps in order, and waits for a successful CLI result between steps.
-6. Open **Runs** to inspect saved responses and execution status.
-
-## Build a Windows installer
-
-```powershell
-npm run typecheck
+```bash
 npm run build
-npm run dist:win
+npm run preview
 ```
 
-The installer is written to `release/Pushistick Setup.exe` (exact filename may include the version).
+## GitHub Pages
 
-## Local data
+Workflow GitHub Actions собирает сайт и публикует его при push в `main`.
 
-Workflow templates and run history are stored in a SQLite database inside Electron's application user-data directory. The database stays on this computer.
+1. Открой репозиторий → **Settings → Pages**.
+2. В разделе **Build and deployment** выбери **GitHub Actions**.
+3. Дождись успешного workflow.
 
-## Safety and current limitations
+Адрес сайта: https://zientres.github.io/pushistick/
 
-- Pushistick does not ask for or store your Google password.
-- It uses the locally installed `agy` executable and Antigravity's documented stream-json protocol.
-- It does not pass permission-bypass flags. Antigravity's own permission settings remain in effect.
-- The current version runs one workflow at a time.
-- A workflow run uses a new CLI conversation. Reusing a previous conversation, schedules, parallel queues, cloud sync, and billing are not included yet.
-- The current version has not yet been verified on the user's Windows computer; the Windows CI workflow checks compilation and packaging prerequisites.
+## Хранение данных
 
-## Official CLI documentation
+Шаблоны и история хранятся только в LocalStorage текущего браузера и профиля. Они не синхронизируются между устройствами и не отправляются на сервер. Очистка данных браузера может удалить их.
 
-- [Headless mode and streaming sessions](https://antigravity.google/docs/cli/headless/)
-- [CLI command reference](https://antigravity.google/docs/cli/reference/)
+## Технологии
+
+React, TypeScript, Vite, Lucide, GitHub Pages.
 
 ## License
 
