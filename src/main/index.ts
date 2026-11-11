@@ -116,8 +116,9 @@ async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt 
     for (let index = 0; index < workflow.steps.length; index += 1) {
       if (state.stopped) throw new Error('Запуск остановлен пользователем.')
       const step = workflow.steps[index]
-      emit({ runId, type: 'step-start', stepIndex: index, stepCount: workflow.steps.length, prompt: step.prompt })
-      child.stdin?.write(JSON.stringify({ event: 'user', message: { content: step.prompt } }) + '\n')
+      const prompt = step.prompt.replace(/\{\{input\}\}/g, initialPrompt)
+      emit({ runId, type: 'step-start', stepIndex: index, stepCount: workflow.steps.length, prompt })
+      child.stdin?.write(JSON.stringify({ event: 'user', message: { content: prompt } }) + '\n')
 
       let result: { status?: string; response?: string; error?: string } | null = null
       while (true) {
