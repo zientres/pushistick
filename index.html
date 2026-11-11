@@ -1,14 +1,76 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#090c12" />
-    <meta name="description" content="Pushistick — помощник для последовательного выполнения цепочек промптов." />
-    <title>Pushistick — Prompt Workflow Helper</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/renderer/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ЛОХ</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 24px;
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    h1 {
+      margin: 0;
+      color: #111;
+      font-size: clamp(5rem, 20vw, 14rem);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.06em;
+      transition: color 180ms ease;
+    }
+    .colors {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    button {
+      min-width: 112px;
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 20px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 150ms ease, box-shadow 150ms ease;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 14px #0002; }
+    button:focus-visible { outline: 3px solid #222; outline-offset: 3px; }
+    .red { background: #e53935; }
+    .blue { background: #1976d2; }
+    .green { background: #2e9d50; }
+    .purple { background: #8e44ad; }
+    .orange { background: #ef8b17; }
+    .black { background: #222; }
+  </style>
+</head>
+<body>
+  <h1 id="word">ЛОХ</h1>
+  <div class="colors" aria-label="Выбрать цвет текста">
+    <button class="red" data-color="#e53935">Красный</button>
+    <button class="blue" data-color="#1976d2">Синий</button>
+    <button class="green" data-color="#2e9d50">Зелёный</button>
+    <button class="purple" data-color="#8e44ad">Фиолетовый</button>
+    <button class="orange" data-color="#ef8b17">Оранжевый</button>
+    <button class="black" data-color="#111111">Чёрный</button>
+  </div>
+  <script>
+    const word = document.getElementById('word');
+    document.querySelectorAll('button[data-color]').forEach((button) => {
+      button.addEventListener('click', () => {
+        word.style.color = button.dataset.color;
+      });
+    });
+  </script>
+</body>
 </html>
