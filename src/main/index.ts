@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
@@ -79,6 +79,17 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: true
     }
+  })
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://antigravity.google/')) void shell.openExternal(url)
+    return { action: 'deny' }
+  })
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    const localUrl = process.env.ELECTRON_RENDERER_URL
+    if (localUrl && url.startsWith(localUrl)) return
+    if (!localUrl && url.startsWith('file://')) return
+    event.preventDefault()
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
