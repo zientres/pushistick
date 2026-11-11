@@ -28,6 +28,8 @@ function App() {
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
+  const [pendingWorkflowId, setPendingWorkflowId] = useState<string | null>(null)
+  const [initialInput, setInitialInput] = useState('')
 
   const refresh = async () => {
     const [nextWorkflows, nextRuns] = await Promise.all([window.pushistick.getWorkflows(), window.pushistick.getRuns()])
@@ -72,17 +74,31 @@ function App() {
     } finally { setBusy(false) }
   }
 
-  const start = async (id: string) => {
+  const launch = async (id: string, initialPrompt = '') => {
     try {
-      const workflow = workflows.find((item) => item.id === id)
-      const needsInput = workflow?.steps.some((step) => step.prompt.includes('{{input}}')) ?? false
-      const initialPrompt = needsInput ? window.prompt('Введи начальный запрос для этого сценария:') : ''
-      if (needsInput && (initialPrompt === null || !initialPrompt.trim())) return
-      const { runId } = await window.pushistick.runWorkflow(id, initialPrompt ?? '')
+      const { runId } = await window.pushistick.runWorkflow(id, initialPrompt)
       setNotice('Запуск создан: ' + runId.slice(0, 8))
       setPage('runs')
       await refresh()
     } catch (error) { setNotice(error instanceof Error ? error.message : String(error)) }
+  }
+
+  const start = async (id: string) => {
+    const workflow = workflows.find((item) => item.id === id)
+    const needsInput = workflow?.steps.some((step) => step.prompt.includes('{{input}}')) ?? false
+    if (needsInput) {
+      setPendingWorkflowId(id)
+      setInitialInput('')
+      return
+    }
+    await launch(id)
+  }
+
+  const confirmLaunch = async () => {
+    if (!pendingWorkflowId || !initialInput.trim()) return
+    const id = pendingWorkflowId
+    setPendingWorkflowId(null)
+    await launch(id, initialInput)
   }
 
   const remove = async (id: string) => {
@@ -116,6 +132,7 @@ function App() {
       <header className="topbar"><div className="breadcrumbs"><span>Pushistick</span><ChevronRight size={14}/><b>{nav.find((item) => item.id === page)?.label ?? 'Настройки'}</b></div><div className="top-actions"><div className="system-pill"><span className={'status-dot ' + (cli?.installed ? 'online' : 'offline')}/>{cli?.installed ? 'CLI подключён' : 'CLI не подключён'}</div><button className="icon-button" title="Справка"><CircleHelp size={17}/></button></div></header>
       <div className="page-content">
         {notice && <div className="toast"><Check size={15}/>{notice}<button onClick={() => setNotice('')}><X size={14}/></button></div>}
+        {pendingWorkflowId && <div className="modal-backdrop"><section className="input-modal"><div className="modal-head"><div><div className="eyebrow">ПЕРЕМЕННЫЙ ПРОМПТ</div><h2>Входные данные для запуска</h2></div><button className="icon-button" onClick={() => setPendingWorkflowId(null)}><X size={17}/></button></div><p>Этот текст будет подставлен вместо <code>{'{{input}}'}</code> во всех шагах шаблона.</p><textarea autoFocus rows={8} value={initialInput} onChange={(e) => setInitialInput(e.target.value)} placeholder="Введи тему статьи, описание проекта или исходную задачу..."/><div className="modal-actions"><button className="secondary-button" onClick={() => setPendingWorkflowId(null)}>Отмена</button><button className="primary-button" disabled={!initialInput.trim()} onClick={() => void confirmLaunch()}><Play size={14} fill="currentColor"/> Запустить сценарий</button></div></section></div>}
 
         {page === 'home' && <>
           <div className="page-heading"><div><div className="eyebrow">РАБОЧЕЕ ПРОСТРАНСТВО</div><h1>Добро пожаловать в Pushistick</h1><p>Собирай повторяющиеся задачи в сценарии и запускай их одной кнопкой.</p></div><button className="primary-button" onClick={createNew}><Plus size={16}/> Создать шаблон</button></div>
