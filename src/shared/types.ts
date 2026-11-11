@@ -47,7 +47,7 @@ export type PushistickApi = {
   deleteWorkflow: (id: string) => Promise<Workflow[]>
   getRuns: () => Promise<RunRecord[]>
   checkAntigravity: () => Promise<CliStatus>
-  runWorkflow: (id: string) => Promise<{ runId: string }>
+  runWorkflow: (id: string, initialPrompt?: string) => Promise<{ runId: string }>
   stopRun: (runId: string) => Promise<void>
   onRunEvent: (callback: (event: RunEvent) => void) => () => void
 }
