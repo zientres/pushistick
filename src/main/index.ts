@@ -99,6 +99,7 @@ async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt 
   const child = commandForAgy(['--input-format', 'stream-json', '--output-format', 'stream-json'])
   const state = { child, stopped: false }
   activeRuns.set(runId, state)
+  child.once('close', () => activeRuns.delete(runId))
   const updateStatus = (status: string, error: string | null = null) => {
     db.prepare('UPDATE runs SET status = ?, finished_at = ?, error = ? WHERE id = ?')
       .run(status, status === 'running' ? null : now(), error, runId)
@@ -158,7 +159,6 @@ async function executeWorkflow(runId: string, workflow: Workflow, initialPrompt 
   } finally {
     try { child.stdin?.end() } catch { /* process may already be closed */ }
     if (state.stopped && child.exitCode === null) child.kill()
-    activeRuns.delete(runId)
   }
 }
 
