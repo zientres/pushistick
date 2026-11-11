@@ -34,9 +34,14 @@ function openDatabase() {
       status TEXT NOT NULL,
       started_at TEXT NOT NULL,
       finished_at TEXT,
-      error TEXT
+      error TEXT,
+      results_json TEXT NOT NULL DEFAULT '[]'
     );
   `)
+  const columns = db.prepare('PRAGMA table_info(runs)').all() as Array<{ name: string }>
+  if (!columns.some((column) => column.name === 'results_json')) {
+    db.exec("ALTER TABLE runs ADD COLUMN results_json TEXT NOT NULL DEFAULT '[]'")
+  }
 }
 
 function emit(event: RunEvent) {
