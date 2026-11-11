@@ -22,6 +22,7 @@ export type RunRecord = {
   startedAt: string
   finishedAt: string | null
   error: string | null
+  results: string[]
 }
 
 export type RunEvent = {
