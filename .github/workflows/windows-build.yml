@@ -22,3 +22,11 @@ jobs:
         run: npm run typecheck
       - name: Build application
         run: npm run build
+      - name: Package Windows installer
+        run: npm run dist:win
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pushistick-Windows-x64
+          path: release/*.exe
+          if-no-files-found: error
